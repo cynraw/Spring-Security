@@ -1,12 +1,16 @@
 package com.chep.client.entity;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Data
 @Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class User {
 
     @Id
@@ -20,5 +24,5 @@ public class User {
     private String password;
 
     private String role;
-    private Boolean enabled=false;
+    private Boolean enabled = false;
 }

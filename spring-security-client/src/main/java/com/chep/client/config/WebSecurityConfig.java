@@ -12,7 +12,9 @@ public class WebSecurityConfig {
 
     private static final String[] WHITE_LIST_URLS = {
             "/hello",
-            "/register"
+            "/register",
+            "/verifyRegistration*",
+            "/resendVerifyToken*"
     };
 
     @Bean
@@ -29,7 +31,7 @@ public class WebSecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(WHITE_LIST_URLS).permitAll()
-                        .anyRequest().authenticated()
+//                        .anyRequest().authenticated()
                 );
 
         return http.build();
