@@ -1,8 +1,10 @@
 package com.chep.client.service;
 
+import com.chep.client.entity.PasswordResetToken;
 import com.chep.client.entity.User;
 import com.chep.client.entity.VerificationToken;
 import com.chep.client.model.UserModel;
+import com.chep.client.repository.PasswordResetTokenRepository;
 import com.chep.client.repository.UserRepository;
 import com.chep.client.repository.VerificationTokenRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,6 +12,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Calendar;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -23,6 +26,9 @@ public class UserServiceImpl implements UserService{
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private PasswordResetTokenRepository passwordResetTokenRepository;
 
     @Override
     public User registerUser(UserModel userModel) {
@@ -88,6 +94,40 @@ public class UserServiceImpl implements UserService{
 
     @Override
     public void createPasswordResetTokenForUser(User user, String token) {
+        PasswordResetToken passwordResetToken =
+                new PasswordResetToken(user, token);
 
+        passwordResetTokenRepository.save(passwordResetToken);
+    }
+
+    @Override
+    public String validatePasswordResetToken(String token) {
+        PasswordResetToken passwordResetToken =
+                passwordResetTokenRepository.findByToken(token);
+
+        if (passwordResetToken == null){
+            return "invalid";
+        }
+
+        User user = passwordResetToken.getUser();
+        Calendar cal = Calendar.getInstance();
+
+        if((passwordResetToken.getExpirationTime().getTime() - cal.getTime().getTime()) <= 0){
+            passwordResetTokenRepository.delete(passwordResetToken);
+            return "expired";
+        }
+
+        return "valid";
+    }
+
+    @Override
+    public Optional<User> getUserByPasswordResetToken(String token) {
+        return Optional.ofNullable(passwordResetTokenRepository.findByToken(token).getUser());
+    }
+
+    @Override
+    public void changePassword(User user, String newPassword) {
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
     }
 }
